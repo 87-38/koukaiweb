@@ -9,14 +9,21 @@
     <!-- AR.jsライブラリの読み込み -->
     <script src="https://cdn.jsdelivr.net/gh/jeromeetienne/ar.js@1.7.2/aframe/build/aframe-ar.min.js"></script>
 </head>
-<body style="margin:0; overflow:hidden;">
+<body style="margin:0; overflow:hidden; text-align:center;">
+    <h1>WebARの体験</h1>
+    <p>下のマーカー画像を別のデバイスで開いて、カメラを向けてください。</p>
+
+    <!-- マーカー画像をページに表示 -->
+    <img src="hiroARMarker.jpg" alt="Hiro Marker" width="300">
+
     <!-- A-frameにAR.jsを紐づける -->
-    <a-scene embedded arjs="debugUIEnabled:false;">
-        <!-- マーカー（hiro）を登録 -->
-        <a-marker preset="hiro">
-            <!-- ワイヤーフレームの立方体をマーカー上に表示 -->
+    <a-scene embedded arjs="debugUIEnabled:true;">
+        <!-- マーカー（カスタムマーカーを使用） -->
+        <a-marker type="pattern" url="hiroARMarker.patt">
+            <!-- 3Dオブジェクトをマーカー上に表示 -->
             <a-box position="0 0.5 0" wireframe="true" color="blue"></a-box>
         </a-marker>
+
         <!-- AR用のカメラ -->
         <a-entity camera></a-entity>
     </a-scene>
