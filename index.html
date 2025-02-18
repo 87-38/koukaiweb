@@ -4,23 +4,23 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>WebARの体験</title>
-    <!-- A-frameの最新バージョンを使用 -->
+    <!-- A-frameの最新バージョン -->
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-    <!-- AR.jsライブラリの読み込み -->
+    <!-- AR.jsライブラリ -->
     <script src="https://cdn.jsdelivr.net/gh/jeromeetienne/ar.js@1.7.2/aframe/build/aframe-ar.min.js"></script>
 </head>
 <body style="margin:0; overflow:hidden; text-align:center;">
     <h1>WebARの体験</h1>
-    <p>下のマーカー画像を別のデバイスで開いて、カメラを向けてください。</p>
+    <p>このページをiPhoneで開き、プリントアウトしたマーカーをカメラで映してください。</p>
 
-    <!-- マーカー画像をページに表示 -->
-    <img src="hiroARMarker.jpg" alt="Hiro Marker" width="300">
+    <!-- マーカー画像を表示（デバッグ用、必要なら削除OK） -->
+    <img src="pattern-marker.png" alt="マーカー" width="300">
 
     <!-- A-frameにAR.jsを紐づける -->
     <a-scene embedded arjs="debugUIEnabled:true;">
-        <!-- マーカー（カスタムマーカーを使用） -->
-        <a-marker type="pattern" url="hiroARMarker.patt">
-            <!-- 3Dオブジェクトをマーカー上に表示 -->
+        <!-- カスタムマーカーを登録 -->
+        <a-marker type="pattern" url="pattern-marker.patt">
+            <!-- 3Dオブジェクト（青いワイヤーフレームの立方体） -->
             <a-box position="0 0.5 0" wireframe="true" color="blue"></a-box>
         </a-marker>
 
