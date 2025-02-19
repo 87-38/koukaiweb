@@ -4,20 +4,15 @@
      <meta charset="utf-8">
      <meta name="viewport" content="width=device-width,initial-scale=1">
      <title>WebARの体験</title>
-     <!--A-frameライブラリの読み込み-->
+     <!--最新のA-frameライブラリの読み込み-->
      <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
      <!--AR.jsライブラリの読み込み-->
      <script src="https://jeromeetienne.github.io/AR.js/aframe/build/aframe-ar.js"></script>
-     <!--A-frame Extrasライブラリの読み込み-->
-     <script src="https://unpkg.com/aframe-extras@6.1.1/dist/aframe-extras.min.js"></script>
-     <!--日本語フォントの読み込み-->
+     <!--Google Fontsの読み込み-->
+     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400&display=swap">
      <style>
-       @font-face {
-         font-family: 'NotoSansJP';
-         src: url('https://fonts.gstatic.com/ea/notosansjp/v6/NotoSansJP-Regular.woff2') format('woff2');
-       }
        .noto {
-         font-family: 'NotoSansJP', sans-serif;
+         font-family: 'Noto Sans JP', sans-serif;
        }
      </style>
   </head>
@@ -26,8 +21,8 @@
      <a-scene embedded arjs="debugUIEnabled:false;">
        <!--マーカーを登録（ここではデフォルトで用意されているhiroマーカーを指定）-->
        <a-marker preset="hiro">
-         <!--日本語テキストを表示（カスタムメッシュフォントを使用）-->
-         <a-entity text="value: おいしいよ！; align: center; color: red; font: https://cdn.aframe.io/fonts/mozillavr.fnt" position="0 0.2 0" scale="3 3 3"></a-entity>
+         <!--日本語テキストを表示（Google Fontsを使用）-->
+         <a-entity text="value: おいしいよ！; align: center; color: red; width: 6; font: #noto" position="0 0.5 0"></a-entity>
          <!--3Dモデルを表示（スケールを調整）-->
          <a-entity obj-model="obj: url(FinalBaseMesh.obj)" position="0 0 0" scale="0.2 0.2 0.2"></a-entity>
        </a-marker>
