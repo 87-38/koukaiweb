@@ -4,8 +4,8 @@
      <meta charset="utf-8">
      <meta name="viewport" content="width=device-width,initial-scale=1">
      <title>WebARの体験</title>
-     <!--A-frameライブラリの読み込み-->
-     <script src="https://aframe.io/releases/0.6.1/aframe.min.js"></script>
+     <!--最新のA-frameライブラリの読み込み-->
+     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
      <!--AR.jsライブラリの読み込み-->
      <script src="https://jeromeetienne.github.io/AR.js/aframe/build/aframe-ar.js"></script>
   </head>
@@ -14,9 +14,11 @@
      <a-scene embedded arjs="debugUIEnabled:false;">
        <!--マーカーを登録(ここではデフォルトで用意されているhiroマーカーを指定)-->
        <a-marker preset="hiro">
-         <!--カスタムフォントを読み込んで日本語テキストを表示-->
-         <a-text value="おいしいよ！" position="0 0.2 0" scale="3 3 3" align="center" color="red" 
-                 font="https://cdn.aframe.io/fonts/kanit.fnt"></a-text>
+         <!--日本語テキストを表示（スケールと位置を調整）-->
+         <a-text value="おいしいよ！" position="0 0.2 0" scale="3 3 3" align="center" color="red"
+                 font="https://cdn.aframe.io/fonts/mozillavr.fnt" negate="false"></a-text>
+         <!--3Dモデルを表示（スケールを調整）-->
+         <a-entity obj-model="obj: url(FinalBaseMesh.obj)" position="0 0 0" scale="0.2 0.2 0.2"></a-entity>
        </a-marker>
        <!--AR用のカメラを置く-->
        <a-entity camera></a-entity>
