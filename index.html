@@ -1,24 +1,61 @@
 <!DOCTYPE html>
-<html>
-  <head>
-     <meta charset="utf-8">
-     <meta name="viewport" content="width=device-width,initial-scale=1">
-     <title>WebARの体験</title>
-     <!--A-frameライブラリの読み込み-->
-     <script src="https://aframe.io/releases/0.6.1/aframe.min.js"></script>
-     <!--AR.jsライブラリの読み込み-->
-     <script src="https://jeromeetienne.github.io/AR.js/aframe/build/aframe-ar.js"></script>
-  </head>
-  <body style="margin:0px; overflow:hidden;">
-     <!--A-frameにAR.jsを紐づける-->
-     <a-scene embedded arjs="debugUIEnabled:false;">
-       <!--マーカーを登録(ここではデフォルトで用意されているhiroマーカーを指定)-->
-       <a-marker preset="hiro">
-         <!--マーカー上にテキストを表示（色を赤に変更、位置とサイズを調整）-->
-         <a-text value="good!" position="0 0.2 0" scale="3 3 3" align="center" color="red"></a-text>
-       </a-marker>
-       <!--AR用のカメラを置く-->
-       <a-entity camera></a-entity>
-     </a-scene>
-  </body>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ログイン画面</title>
+    <style>
+        .container {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .links {
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>ログイン</h2>
+        <form action="/login" method="POST">
+            <div class="form-group">
+                <label for="username">ユーザー名</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">パスワード</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit" class="btn">ログイン</button>
+            <div class="links">
+                <p><a href="/register">新規登録はこちら</a></p>
+                <p><a href="/forgot-password">パスワードを忘れた方はこちら</a></p>
+            </div>
+        </form>
+    </div>
+</body>
 </html>
