@@ -1,3 +1,15 @@
+console.log('JavaScriptファイルが正しく読み込まれました');
+
+// GitHub Pages用のベースパス設定
+const getBasePath = () => {
+    if (typeof basePath !== 'undefined') {
+        return basePath;
+    }
+    return location.hostname === 'localhost' || location.hostname === '127.0.0.1'
+        ? ''
+        : '/' + location.pathname.split('/')[1];
+};
+
 // タスクとユーザーのデータを管理するクラス
 class TaskManager {
     constructor() {
