@@ -102,6 +102,7 @@ class TaskManager {
 class TaskUI {
     constructor() {
         this.taskManager = new TaskManager();
+        this.currentFilter = 'all';
         this.initializeUI();
         this.bindEvents();
         this.refreshUI();
@@ -113,6 +114,9 @@ class TaskUI {
         this.userList = document.getElementById('userList');
         this.addUserBtn = document.getElementById('addUserBtn');
         this.modal = document.getElementById('taskModal');
+        this.filterAllBtn = document.getElementById('filterAll');
+        this.filterActiveBtn = document.getElementById('filterActive');
+        this.filterCompletedBtn = document.getElementById('filterCompleted');
     }
 
     bindEvents() {
@@ -125,21 +129,55 @@ class TaskUI {
         // ユーザー追加ボタン
         this.addUserBtn.addEventListener('click', () => {
             const name = prompt('新しいユーザー名を入力してください：');
-            if (name) {
-                this.taskManager.addUser(name);
+            if (name && name.trim()) {
+                this.taskManager.addUser(name.trim());
                 this.refreshUI();
             }
         });
+
+        // フィルターボタンのイベント
+        this.filterAllBtn.addEventListener('click', () => this.setFilter('all'));
+        this.filterActiveBtn.addEventListener('click', () => this.setFilter('active'));
+        this.filterCompletedBtn.addEventListener('click', () => this.setFilter('completed'));
+    }
+
+    setFilter(filter) {
+        this.currentFilter = filter;
+        // フィルターボタンのアクティブ状態を更新
+        [this.filterAllBtn, this.filterActiveBtn, this.filterCompletedBtn].forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        switch (filter) {
+            case 'all':
+                this.filterAllBtn.classList.add('active');
+                break;
+            case 'active':
+                this.filterActiveBtn.classList.add('active');
+                break;
+            case 'completed':
+                this.filterCompletedBtn.classList.add('active');
+                break;
+        }
+        
+        this.renderTaskList();
     }
 
     handleTaskSubmit() {
         const formData = new FormData(this.taskForm);
+        const assignedTo = parseInt(formData.get('assignedTo'));
+        
+        if (!assignedTo) {
+            alert('担当者を選択してください');
+            return;
+        }
+
         const taskData = {
             title: formData.get('title'),
             description: formData.get('description'),
             dueDate: formData.get('dueDate'),
             priority: formData.get('priority'),
-            assignedTo: parseInt(formData.get('assignedTo'))
+            assignedTo: assignedTo
         };
 
         this.taskManager.addTask(
@@ -162,7 +200,13 @@ class TaskUI {
     renderUserList() {
         this.userList.innerHTML = '';
         const assignedToSelect = document.getElementById('assignedTo');
+        const editAssignedToSelect = document.getElementById('editAssignedTo');
+        
+        // セレクトボックスをクリア
         assignedToSelect.innerHTML = '<option value="">担当者を選択</option>';
+        if (editAssignedToSelect) {
+            editAssignedToSelect.innerHTML = '<option value="">担当者を選択</option>';
+        }
 
         this.taskManager.users.forEach(user => {
             // ユーザーリストの描画
@@ -184,28 +228,58 @@ class TaskUI {
             option.value = user.id;
             option.textContent = user.name;
             assignedToSelect.appendChild(option);
+            
+            if (editAssignedToSelect) {
+                const editOption = option.cloneNode(true);
+                editAssignedToSelect.appendChild(editOption);
+            }
         });
     }
 
     renderTaskList() {
         this.taskList.innerHTML = '';
-        const tasks = this.taskManager.getTasks();
+        let tasks = this.taskManager.getTasks();
+
+        // フィルター適用
+        switch (this.currentFilter) {
+            case 'active':
+                tasks = tasks.filter(task => !task.completed);
+                break;
+            case 'completed':
+                tasks = tasks.filter(task => task.completed);
+                break;
+        }
+
+        if (tasks.length === 0) {
+            const emptyMessage = document.createElement('li');
+            emptyMessage.textContent = 'タスクがありません';
+            emptyMessage.style.textAlign = 'center';
+            emptyMessage.style.padding = '20px';
+            this.taskList.appendChild(emptyMessage);
+            return;
+        }
 
         tasks.forEach(task => {
             const assignedUser = this.taskManager.users.find(user => user.id === task.assignedTo);
             const taskElement = document.createElement('li');
             taskElement.className = `task-item priority-${task.priority} ${task.completed ? 'task-completed' : ''}`;
             
+            const priorityText = {
+                'high': '高',
+                'medium': '中',
+                'low': '低'
+            };
+            
             taskElement.innerHTML = `
                 <div class="task-header">
                     <h3 class="task-title">${task.title}</h3>
                     <div class="task-meta">
-                        <span class="task-priority">${task.priority}</span>
+                        <span class="task-priority">優先度: ${priorityText[task.priority]}</span>
                         <span>期限: ${new Date(task.dueDate).toLocaleDateString()}</span>
                         <span>担当: ${assignedUser ? assignedUser.name : '未割り当て'}</span>
                     </div>
                 </div>
-                <p>${task.description}</p>
+                <p>${task.description || '説明なし'}</p>
                 <div class="task-actions">
                     <button class="btn-small btn-complete">${task.completed ? '未完了に戻す' : '完了'}</button>
                     <button class="btn-small btn-edit">編集</button>
