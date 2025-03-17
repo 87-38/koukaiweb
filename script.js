@@ -66,11 +66,31 @@ function loadTodos(username) {
     todoList.innerHTML = "";
     let todos = JSON.parse(localStorage.getItem("todos")) || {};
     if (todos[username]) {
-        todos[username].forEach(todo => {
+        todos[username].forEach((todo, index) => {
             const li = document.createElement("li");
             li.textContent = todo;
+
+            // 削除ボタンを作成
+            const deleteButton = document.createElement("button");
+            deleteButton.textContent = "削除";
+            deleteButton.style.marginLeft = "10px";
+            deleteButton.onclick = function () {
+                deleteTodo(username, index);
+            };
+
+            li.appendChild(deleteButton);
             todoList.appendChild(li);
         });
+    }
+}
+
+// Todoを削除する処理
+function deleteTodo(username, index) {
+    let todos = JSON.parse(localStorage.getItem("todos")) || {};
+    if (todos[username]) {
+        todos[username].splice(index, 1); // 指定されたインデックスのTodoを削除
+        localStorage.setItem("todos", JSON.stringify(todos));
+        loadTodos(username); // 削除後にリストを再読み込み
     }
 }
 
