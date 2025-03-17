@@ -1,103 +1,181 @@
-// ユーザー登録関数
-function registerUser() {
-    const newUsername = document.getElementById("newUsername").value;
-    const newPassword = document.getElementById("newPassword").value;
-
-    if (newUsername && newPassword) {
-        let users = JSON.parse(localStorage.getItem("users")) || {};
-        if (users[newUsername]) {
-            alert("このユーザー名は既に登録されています。");
-            return;
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>会員限定 Todo リスト</title>
+    <style>
+        body {
+            font-family: 'Hiragino Sans', 'Meiryo', sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
-        users[newUsername] = newPassword;
-        localStorage.setItem("users", JSON.stringify(users));
-        alert("ユーザー登録が完了しました。");
-    }
-}
-
-// ログイン処理
-function login() {
-    const username = document.getElementById("username").value;
-    const password = document.getElementById("password").value;
-    let users = JSON.parse(localStorage.getItem("users")) || {};
-
-    if (users[username] && users[username] === password) {
-        localStorage.setItem("loggedIn", username);
-        showTodoPage(username);
-    } else {
-        document.getElementById("errorMessage").textContent = "ユーザー名またはパスワードが違います。";
-    }
-}
-
-// ログアウト処理
-function logout() {
-    localStorage.removeItem("loggedIn");
-    location.reload();
-}
-
-// Todoリストを表示する処理
-function showTodoPage(username) {
-    document.getElementById("loginPage").classList.add("hidden");
-    document.getElementById("todoPage").classList.remove("hidden");
-    loadTodos(username);
-}
-
-// Todoを追加する処理
-function addTodo() {
-    const username = localStorage.getItem("loggedIn");
-    if (!username) return;
-
-    const todoText = document.getElementById("newTodo").value;
-    if (todoText.trim() !== "") {
-        let todos = JSON.parse(localStorage.getItem("todos")) || {};
-        if (!todos[username]) {
-            todos[username] = [];
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: center;
         }
-        todos[username].push(todoText);
-        localStorage.setItem("todos", JSON.stringify(todos));
-        document.getElementById("newTodo").value = "";
-        loadTodos(username);
-    }
-}
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .hidden { display: none; }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            margin: 10px 0;
+        }
+        li button {
+            margin-left: 10px;
+            padding: 5px 10px;
+            background-color: red;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="loginPage">
+        <h2>ログイン</h2>
+        <input type="text" id="username" placeholder="ユーザー名">
+        <input type="password" id="password" placeholder="パスワード">
+        <button onclick="login()">ログイン</button>
+        <p id="errorMessage" style="color: red;"></p>
+        <h3>新規登録</h3>
+        <input type="text" id="newUsername" placeholder="新しいユーザー名">
+        <input type="password" id="newPassword" placeholder="新しいパスワード">
+        <button onclick="registerUser()">登録</button>
+    </div>
 
-// Todoリストを読み込む処理
-function loadTodos(username) {
-    const todoList = document.getElementById("todoList");
-    todoList.innerHTML = "";
-    let todos = JSON.parse(localStorage.getItem("todos")) || {};
-    if (todos[username]) {
-        todos[username].forEach((todo, index) => {
-            const li = document.createElement("li");
-            li.textContent = todo;
+    <div class="container hidden" id="todoPage">
+        <h2>Todo リスト</h2>
+        <ul id="todoList"></ul>
+        <input type="text" id="newTodo" placeholder="新しいTodo">
+        <button onclick="addTodo()">追加</button>
+        <button onclick="logout()">ログアウト</button>
+    </div>
 
-            // 削除ボタンを作成
-            const deleteButton = document.createElement("button");
-            deleteButton.textContent = "削除";
-            deleteButton.style.marginLeft = "10px";
-            deleteButton.onclick = function () {
-                deleteTodo(username, index);
-            };
+    <script>
+        function registerUser() {
+            const newUsername = document.getElementById("newUsername").value;
+            const newPassword = document.getElementById("newPassword").value;
 
-            li.appendChild(deleteButton);
-            todoList.appendChild(li);
-        });
-    }
-}
+            if (newUsername && newPassword) {
+                let users = JSON.parse(localStorage.getItem("users")) || {};
+                if (users[newUsername]) {
+                    alert("このユーザー名は既に登録されています。");
+                    return;
+                }
+                users[newUsername] = newPassword;
+                localStorage.setItem("users", JSON.stringify(users));
+                alert("ユーザー登録が完了しました。");
+            }
+        }
 
-// Todoを削除する処理
-function deleteTodo(username, index) {
-    let todos = JSON.parse(localStorage.getItem("todos")) || {};
-    if (todos[username]) {
-        todos[username].splice(index, 1); // 指定されたインデックスのTodoを削除
-        localStorage.setItem("todos", JSON.stringify(todos));
-        loadTodos(username); // 削除後にリストを再読み込み
-    }
-}
+        function login() {
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+            let users = JSON.parse(localStorage.getItem("users")) || {};
 
-// ページロード時にログイン情報を確認
-window.onload = function () {
-    const loggedInUser = localStorage.getItem("loggedIn");
-    if (loggedInUser) {
-        showTodoPage(loggedInUser);
-    }
-};
+            if (users[username] && users[username] === password) {
+                localStorage.setItem("loggedIn", username);
+                showTodoPage(username);
+            } else {
+                document.getElementById("errorMessage").textContent = "ユーザー名またはパスワードが違います。";
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem("loggedIn");
+            location.reload();
+        }
+
+        function showTodoPage(username) {
+            document.getElementById("loginPage").classList.add("hidden");
+            document.getElementById("todoPage").classList.remove("hidden");
+            loadTodos(username);
+        }
+
+        function addTodo() {
+            const username = localStorage.getItem("loggedIn");
+            if (!username) return;
+
+            const todoText = document.getElementById("newTodo").value;
+            if (todoText.trim() !== "") {
+                let todos = JSON.parse(localStorage.getItem("todos")) || {};
+                if (!todos[username]) {
+                    todos[username] = [];
+                }
+                todos[username].push(todoText);
+                localStorage.setItem("todos", JSON.stringify(todos));
+                document.getElementById("newTodo").value = "";
+                loadTodos(username);
+            }
+        }
+
+        function loadTodos(username) {
+            const todoList = document.getElementById("todoList");
+            todoList.innerHTML = "";
+            let todos = JSON.parse(localStorage.getItem("todos")) || {};
+            if (todos[username]) {
+                todos[username].forEach((todo, index) => {
+                    const li = document.createElement("li");
+
+                    // 削除ボタンを作成
+                    const deleteButton = document.createElement("button");
+                    deleteButton.textContent = "削除";
+                    deleteButton.onclick = function () {
+                        deleteTodo(username, index);
+                    };
+
+                    // ToDoアイテムの前に削除ボタンを追加
+                    li.appendChild(deleteButton);
+                    li.appendChild(document.createTextNode(todo));  // ToDoテキストを追加
+
+                    todoList.appendChild(li);
+                });
+            }
+        }
+
+        function deleteTodo(username, index) {
+            let todos = JSON.parse(localStorage.getItem("todos")) || {};
+            if (todos[username]) {
+                todos[username].splice(index, 1); // 指定されたインデックスのTodoを削除
+                localStorage.setItem("todos", JSON.stringify(todos));
+                loadTodos(username); // 削除後にリストを再読み込み
+            }
+        }
+
+        window.onload = function () {
+            const loggedInUser = localStorage.getItem("loggedIn");
+            if (loggedInUser) {
+                showTodoPage(loggedInUser);
+            }
+        };
+    </script>
+</body>
+</html>
