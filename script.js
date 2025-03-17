@@ -144,6 +144,10 @@
             if (todos[username]) {
                 todos[username].forEach((todo, index) => {
                     const li = document.createElement("li");
+                    li.style.display = "flex";
+                    li.style.justifyContent = "space-between";  // 横並びにし、右端に配置
+
+                    li.textContent = todo;
 
                     // 削除ボタンを作成
                     const deleteButton = document.createElement("button");
@@ -154,8 +158,7 @@
 
                     // ToDoアイテムの前に削除ボタンを追加
                     li.appendChild(deleteButton);
-                    li.appendChild(document.createTextNode(todo));  // ToDoテキストを追加
-
+                    //li.appendChild(document.createTextNode(todo));  // ToDoテキストを追加
                     todoList.appendChild(li);
                 });
             }
