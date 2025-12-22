@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>出退勤管理システム</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', sans-serif; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen p-6">
+    <div class="max-w-5xl mx-auto">
+        <!-- メインカード -->
+        <div class="bg-white rounded-2xl shadow-xl p-8 mb-6">
+            <div class="flex items-center justify-between mb-6">
+                <h1 class="text-3xl font-bold text-gray-800">📋 出退勤管理システム</h1>
+                <div class="text-right">
+                    <div id="currentTime" class="text-4xl font-bold text-indigo-600"></div>
+                    <div id="currentDate" class="text-gray-600"></div>
+                </div>
+            </div>
+
+            <!-- 選択中ユーザー表示 -->
+            <div id="selectedUserDisplay" class="mb-6 bg-indigo-50 border-2 border-indigo-200 rounded-xl p-4 hidden">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="text-indigo-700 font-semibold">現在のユーザー:</div>
+                        <div id="selectedUserName" class="text-2xl font-bold text-indigo-600"></div>
+                    </div>
+                    <button onclick="clearUser()" class="text-gray-500 hover:text-gray-700 transition-colors">
+                        ✕
+                    </button>
+                </div>
+            </div>
+
+            <!-- ユーザー選択 -->
+            <div id="userSelection" class="mb-6">
+                <h2 class="text-xl font-bold text-gray-700 mb-3">ユーザーを選択してください</h2>
+                <div id="userButtons" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-4"></div>
+                <button onclick="toggleAddUser()" class="bg-gray-500 hover:bg-gray-600 text-white font-bold px-6 py-3 rounded-lg transition-all">
+                    + ユーザー追加
+                </button>
+            </div>
+
+            <!-- ユーザー追加フォーム -->
+            <div id="addUserForm" class="mb-6 bg-gray-50 p-4 rounded-lg hidden">
+                <div class="flex gap-3">
+                    <input type="text" id="newUserName" placeholder="新しいユーザー名" 
+                        class="flex-1 border-2 border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-indigo-500">
+                    <button onclick="addUser()" class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold px-6 py-2 rounded-lg transition-all">
+                        追加
+                    </button>
+                </div>
+            </div>
+
+            <!-- 出退勤ボタン -->
+            <div id="actionButtons" class="hidden">
+                <div class="flex gap-4 justify-center mb-8">
+                    <button id="checkInBtn" onclick="checkIn()" class="flex items-center gap-3 bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-8 rounded-xl transition-all transform hover:scale-105 shadow-lg">
+                        ▶ 出勤する
+                    </button>
+                    <button id="checkOutBtn" onclick="checkOut()" class="hidden flex items-center gap-3 bg-red-500 hover:bg-red-600 text-white font-bold py-4 px-8 rounded-xl transition-all transform hover:scale-105 shadow-lg">
+                        ⏹ 退勤する
+                    </button>
+                </div>
+
+                <!-- 勤務中表示 -->
+                <div id="workingStatus" class="hidden bg-green-50 border-2 border-green-300 rounded-xl p-4 text-center">
+                    <div class="text-green-800 font-semibold text-lg">
+                        🟢 <span id="workingUserName"></span> さん 勤務中
+                    </div>
+                    <div class="text-green-700 mt-1">
+                        出勤時刻: <span id="checkInTime"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 勤務中メンバー -->
+            <div id="workingMembers" class="mt-6 bg-blue-50 rounded-xl p-4 hidden">
+                <h3 class="font-semibold text-gray-700 mb-2">現在勤務中のメンバー</h3>
+                <div id="workingMembersList" class="flex flex-wrap gap-2"></div>
+            </div>
+        </div>
+
+        <!-- 履歴カード -->
+        <div class="bg-white rounded-2xl shadow-xl p-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">📅 勤怠履歴</h2>
+            <div id="recordsList" class="space-y-3">
+                <div class="text-center text-gray-500 py-8">まだ記録がありません</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedUser = '';
+        let users = [];
+        let records = [];
+        let workingUsers = {};
+
+        // 初期化
+        function init() {
+            loadUsers();
+            loadRecords();
+            loadLastUser();
+            updateTime();
+            setInterval(updateTime, 1000);
+        }
+
+        // 時刻更新
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('currentTime').textContent = now.toLocaleTimeString('ja-JP');
+            document.getElementById('currentDate').textContent = now.toLocaleDateString('ja-JP', {
+                year: 'numeric', month: 'long', day: 'numeric', weekday: 'long'
+            });
+        }
+
+        // ユーザー読み込み
+        function loadUsers() {
+            const saved = localStorage.getItem('users-list');
+            users = saved ? JSON.parse(saved) : [];
+            renderUserButtons();
+        }
+
+        // 前回ユーザー読み込み
+        function loadLastUser() {
+            const saved = localStorage.getItem('last-selected-user');
+            if (saved) {
+                selectUser(saved);
+            }
+        }
+
+        // 記録読み込み
+        function loadRecords() {
+            records = [];
+            workingUsers = {};
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('attendance:')) {
+                    const record = JSON.parse(localStorage.getItem(key));
+                    records.push(record);
+                    if (!record.checkOut) {
+                        workingUsers[record.userName] = record;
+                    }
+                }
+            }
+            records.sort((a, b) => new Date(b.checkIn) - new Date(a.checkIn));
+            renderRecords();
+            renderWorkingMembers();
+        }
+
+        // ユーザーボタン描画
+        function renderUserButtons() {
+            const container = document.getElementById('userButtons');
+            container.innerHTML = users.map(user => 
+                `<button onclick="selectUser('${user}')" class="bg-white border-2 border-indigo-300 hover:bg-indigo-500 hover:text-white text-indigo-700 font-bold py-4 px-6 rounded-xl transition-all transform hover:scale-105 shadow">
+                    ${user}
+                </button>`
+            ).join('');
+        }
+
+        // ユーザー選択
+        function selectUser(user) {
+            selectedUser = user;
+            localStorage.setItem('last-selected-user', user);
+            document.getElementById('selectedUserName').textContent = user;
+            document.getElementById('selectedUserDisplay').classList.remove('hidden');
+            document.getElementById('userSelection').classList.add('hidden');
+            document.getElementById('actionButtons').classList.remove('hidden');
+            
+            const isWorking = workingUsers[user];
+            document.getElementById('checkInBtn').classList.toggle('hidden', isWorking);
+            document.getElementById('checkOutBtn').classList.toggle('hidden', !isWorking);
+            
+            if (isWorking) {
+                document.getElementById('workingStatus').classList.remove('hidden');
+                document.getElementById('workingUserName').textContent = user;
+                document.getElementById('checkInTime').textContent = formatTime(isWorking.checkIn);
+            } else {
+                document.getElementById('workingStatus').classList.add('hidden');
+            }
+        }
+
+        // ユーザー選択解除
+        function clearUser() {
+            selectedUser = '';
+            document.getElementById('selectedUserDisplay').classList.add('hidden');
+            document.getElementById('userSelection').classList.remove('hidden');
+            document.getElementById('actionButtons').classList.add('hidden');
+        }
+
+        // ユーザー追加表示切替
+        function toggleAddUser() {
+            const form = document.getElementById('addUserForm');
+            form.classList.toggle('hidden');
+        }
+
+        // ユーザー追加
+        function addUser() {
+            const input = document.getElementById('newUserName');
+            const name = input.value.trim();
+            if (!name) return;
+            
+            users.push(name);
+            localStorage.setItem('users-list', JSON.stringify(users));
+            input.value = '';
+            document.getElementById('addUserForm').classList.add('hidden');
+            renderUserButtons();
+        }
+
+        // 出勤
+        function checkIn() {
+            if (!selectedUser) return;
+            
+            if (workingUsers[selectedUser]) {
+                alert('すでに出勤済みです');
+                return;
+            }
+
+            const now = new Date();
+            const record = {
+                id: `attendance:${selectedUser}:${now.getTime()}`,
+                userName: selectedUser,
+                checkIn: now.toISOString(),
+                checkOut: null,
+                date: now.toLocaleDateString('ja-JP')
+            };
+            
+            localStorage.setItem(record.id, JSON.stringify(record));
+            loadRecords();
+            selectUser(selectedUser);
+        }
+
+        // 退勤
+        function checkOut() {
+            if (!selectedUser) return;
+            
+            const currentRecord = workingUsers[selectedUser];
+            if (!currentRecord) return;
+            
+            const now = new Date();
+            currentRecord.checkOut = now.toISOString();
+            
+            localStorage.setItem(currentRecord.id, JSON.stringify(currentRecord));
+            loadRecords();
+            selectUser(selectedUser);
+        }
+
+        // 勤務中メンバー描画
+        function renderWorkingMembers() {
+            const container = document.getElementById('workingMembers');
+            const list = document.getElementById('workingMembersList');
+            const working = Object.keys(workingUsers);
+            
+            if (working.length > 0) {
+                container.classList.remove('hidden');
+                list.innerHTML = working.map(user => 
+                    `<span class="bg-blue-200 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">${user}</span>`
+                ).join('');
+            } else {
+                container.classList.add('hidden');
+            }
+        }
+
+        // 記録描画
+        function renderRecords() {
+            const container = document.getElementById('recordsList');
+            if (records.length === 0) {
+                container.innerHTML = '<div class="text-center text-gray-500 py-8">まだ記録がありません</div>';
+                return;
+            }
+            
+            container.innerHTML = records.map(record => `
+                <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-4">
+                            <div class="bg-indigo-100 text-indigo-700 font-bold px-3 py-1 rounded-lg">
+                                ${record.userName}
+                            </div>
+                            <div class="text-gray-700 font-semibold">${record.date}</div>
+                            <div class="flex items-center gap-2 text-sm text-gray-600">
+                                ▶ ${formatTime(record.checkIn)}
+                            </div>
+                            ${record.checkOut ? `
+                                <div class="text-gray-400">→</div>
+                                <div class="flex items-center gap-2 text-sm text-gray-600">
+                                    ⏹ ${formatTime(record.checkOut)}
+                                </div>
+                            ` : ''}
+                        </div>
+                        <div class="flex items-center gap-2 text-indigo-600 font-semibold">
+                            ⏱ ${calculateWorkTime(record.checkIn, record.checkOut)}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 時刻フォーマット
+        function formatTime(isoString) {
+            return new Date(isoString).toLocaleTimeString('ja-JP', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // 勤務時間計算
+        function calculateWorkTime(checkIn, checkOut) {
+            if (!checkOut) return '勤務中';
+            const diff = new Date(checkOut) - new Date(checkIn);
+            const hours = Math.floor(diff / 3600000);
+            const minutes = Math.floor((diff % 3600000) / 60000);
+            return `${hours}時間${minutes}分`;
+        }
+
+        // Enterキーでユーザー追加
+        document.getElementById('newUserName').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addUser();
+        });
+
+        // 初期化実行
+        init();
+    </script>
+</body>
+</html>
